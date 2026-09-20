@@ -1,132 +1,291 @@
-# INE Product Price Tracker (Web Scraping & History Tracking)
+# INE Price Tracker
 
-A production-grade full-stack web application designed for INE's Software Engineer Intern assignment. It tracks product prices and stock availability over time from INE's hosted mock store (`https://demo.inelabteamdev.com/`) using resilient Playwright automation and honest audit logging.
+A full-stack price tracking application that searches products from the INE mock store, tracks selected products, stores price history, detects price changes, and generates alerts.
 
----
+## Tech Stack
 
-## 🌟 Key Features
+### Frontend
+- React
+- Vite
+- JavaScript
+- CSS
 
-1. **Product Search & Tracking**:
-   - Search INE's hosted mock store by partial or full product name.
-   - Track products with 1-click catalog integration.
+### Backend
+- Node.js
+- Express.js
+- Playwright
 
-2. **Resilient Scheduled Scraping**:
-   - Automated price and stock extraction on a fixed schedule (every 2 hours / configurable per product).
-   - Solves store difficulty: handles cursor trajectory simulation (min 8 moves, 600ms dwell), cookie overlays, async delays, and 429/500 retries.
+### Database
+- Supabase / PostgreSQL
 
-3. **Honest Per-Product Audit Logs & Price History**:
-   - Interactive Recharts area chart visualizing price changes and stock trends over time.
-   - Complete audit trail table listing every scrape attempt (`success`, `retried`, `failed`) with attempt duration and error details.
+### Deployment
+- Frontend: Vercel
+- Backend: Render
+- Scheduled scraping: cron-job.org
 
-4. **Observable (Headed) Run Visualizer**:
-   - Launch Playwright in visible headed Chrome mode (`npm run scrape:headed` or via UI launcher) to watch live cursor movement and retry handling.
+## Project Structure
 
-5. **In-App Notifications**:
-   - Price drop and back-in-stock alerts.
+```text
+Price_tracker/
+├── client/
+│   ├── src/
+│   │   └── services/
+│   │       └── api.js
+│   └── ...
+├── server/
+│   ├── routes/
+│   ├── ...
+│   └── server.js
+├── scraper/
+├── schema.sql
+├── DESIGN_NOTES.md
+├── README.md
+├── .env.example
+├── .gitignore
+└── ...
+```
 
----
+## Overview
 
-## 🛠️ Tech Stack
+This project is a small full-stack web app built for the INE mock storefront at https://demo.inelabteamdev.com/.
 
-- **Frontend**: React 18, Vite, Recharts, Lucide Icons, Glassmorphic CSS System (Deployed on Vercel)
-- **Backend**: Node.js, Express REST API (Deployed on Render)
-- **Database**: Supabase PostgreSQL (`@supabase/supabase-js`) + Local Resilience Adapter
-- **Scraper Engine**: Playwright Chromium (DOM Automation & Mouse Simulation)
-- **Schedule Trigger**: External Cron (`cron-job.org` or Vercel Cron)
+Users can:
+- search for products by partial or full name,
+- track a product for price monitoring,
+- scrape the page on a schedule,
+- view price and stock history over time,
+- review each scrape attempt and its outcome,
+- receive alerts when price drops or inventory returns.
 
----
+The app follows the assignment requirements and aims to be reliable under the dynamic and intentionally awkward storefront behavior.
 
-## 🚀 Quick Setup Instructions
+## Features
 
-### 1. Clone & Install Dependencies
+- Product search and catalog browsing from the INE mock store
+- Product tracking persistence in Supabase/PostgreSQL
+- Scheduled scraper runs every 2 hours via cron trigger
+- Price and stock extraction with retry handling
+- Honest scrape logging for success, retry, and failure cases
+- Price history chart and product audit log
+- Price drop and back-in-stock alert support
+- Headed Playwright mode for observable runs
+
+## Tech Stack Details
+
+### Frontend
+- React
+- Vite
+- JavaScript
+- CSS
+- Recharts for history visualization
+- Lucide icons
+
+### Backend
+- Node.js
+- Express.js
+- Playwright
+- dotenv
+
+### Database
+- Supabase / PostgreSQL
+
+### Deployment
+- Frontend deployment: Vercel
+- Backend deployment: Render
+- Scheduled scraping: cron-job.org
+
+## Repository Structure
+
+```text
+Price_tracker/
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── package.json
+│   └── vite.config.js
+├── server/
+│   ├── routes/
+│   ├── db.js
+│   └── server.js
+├── scraper/
+│   ├── headed.js
+│   ├── index.js
+│   └── test_scraper.js
+├── schema.sql
+├── DESIGN_NOTES.md
+├── .env.example
+├── .gitignore
+├── README.md
+├── package.json
+└── package-lock.json
+```
+
+## Local Setup
+
+### 1. Clone the repository
 
 ```bash
-# Clone repository
-git clone https://github.com/your-username/ine-product-price-tracker.git
-cd ine-product-price-tracker
+git clone https://github.com/Princeagrawal07/Price_tracker.git
+cd Price_tracker
+```
 
-# Install backend dependencies & Playwright browsers
+### 2. Install dependencies
+
+Install the backend dependencies and Playwright browser bundle:
+
+```bash
 npm install
 npx playwright install chromium
+```
 
-# Install frontend dependencies
+Install the frontend dependencies:
+
+```bash
 cd client
 npm install
 cd ..
 ```
 
-### 2. Environment Variables Configuration
+### 3. Configure environment variables
 
-Copy `.env.example` to `.env`:
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Update `.env` with your own values:
 
 ```env
 PORT=5000
 NODE_ENV=development
-CRON_SECRET=ine_cron_secret_key_2026
+CRON_SECRET=replace-with-a-strong-random-secret
 MOCK_STORE_URL=https://demo.inelabteamdev.com
-
-# Supabase Credentials (Required for Cloud Database)
-SUPABASE_URL=https://your-supabase-project.supabase.co
-SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+ALLOW_LOCAL_FALLBACK=true
 ```
 
-### 3. Run Locally
+For the frontend, set the Vite environment variable in `client/.env` or in your Vercel project settings:
 
-Start backend server and frontend client concurrently:
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+For production deployment, set:
+
+```env
+VITE_API_URL=https://your-render-backend.onrender.com
+```
+
+Do not include `/api` in `VITE_API_URL`; the frontend appends `/api` automatically.
+
+## Running the App
+
+### Backend
 
 ```bash
-# Terminal 1: Backend Server (Port 5000)
 npm run dev:server
+```
 
-# Terminal 2: Frontend Client (Port 3000)
+### Frontend
+
+```bash
 npm run dev:client
 ```
 
-Open browser at `http://localhost:3000`.
+Then open:
 
----
+```text
+http://localhost:3000
+```
 
-## 🎬 Observable (Headed) Run & Video Recording Guide
+## Scheduled Scraping
 
-To fulfill the requirement of submitting a short 2–4 minute screen recording of the scraper running in headed mode against the mock store:
+Because free-tier backends can sleep, the scraper is not meant to run as a forever-live loop. Instead, a cron service calls the scheduled endpoint every 2 hours.
 
-1. Run the headed CLI command:
-   ```bash
-   npm run scrape:headed
-   ```
-   *OR* click the **"Headed Run"** button in the top navigation bar of the web application.
+Cron schedule:
 
-2. A visible Chrome browser window will open automatically, showing Playwright moving the cursor across the price block, bypassing the cookie overlay, clicking reveal price, handling store retries, and recording the extracted data.
+```cron
+0 */2 * * *
+```
 
----
+Example request:
 
-## ⏰ Scraping Schedule & Cron Job Setup
+```bash
+curl -X POST "https://your-render-service.onrender.com/api/scrape/scheduled" \
+  -H "x-cron-secret: YOUR_CRON_SECRET"
+```
 
-Free-tier backends sleep after inactivity. Scheduled scraping is triggered via external cron service to avoid sleeping background loops.
+This endpoint is protected with the `CRON_SECRET` environment variable.
 
-1. Register a free account at [cron-job.org](https://cron-job.org/).
-2. Create a new cron job pointing to your deployed Render API endpoint:
-   - **URL**: `https://your-render-app.onrender.com/api/scrape/scheduled`
-   - **Execution Schedule**: Every 2 hours (`0 */2 * * *`)
-   - **HTTP Header**: `x-cron-secret: ine_cron_secret_key_2026`
+## Headed Run / Observable Demo
 
----
+For a visible local run, use:
 
-## 🚢 Deployment Guide
+```bash
+npm run scrape:headed
+```
 
-### Database (Supabase)
-1. Create a free PostgreSQL database on [Supabase](https://supabase.com).
-2. Execute the queries in [`schema.sql`](./schema.sql) in the Supabase SQL Editor.
-3. Copy your project URL and Anon API key into your Render environment variables.
+This opens a browser window so the scraper behavior can be observed while it:
+- handles cookie overlays,
+- moves the cursor,
+- clicks the price reveal challenge,
+- retries on delayed or failing responses,
+- logs attempt outcomes.
 
-### Backend (Render.com)
-1. Create a new Web Service on Render from your GitHub repo.
-2. Build Command: `npm install && npx playwright install chromium`
-3. Start Command: `node server/server.js`
-4. Add environment variables (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `CRON_SECRET`).
+## Deployment
 
 ### Frontend (Vercel)
-1. Import your GitHub repo on [Vercel](https://vercel.com).
-2. Set Framework Preset: **Vite**.
-3. Root Directory: `client`.
-4. Deploy!
+
+- Import the repository into Vercel.
+- Set the root directory to `client`.
+- Use the Vite preset.
+- Build command: `npm run build`
+- Output directory: `dist`
+- Set environment variable:
+  ```env
+  VITE_API_URL=https://your-render-backend.onrender.com
+  ```
+
+### Backend (Render)
+
+- Create a web service using the repository root.
+- Build command:
+  ```bash
+  npm install && npx playwright install chromium
+  ```
+- Start command:
+  ```bash
+  node server/server.js
+  ```
+- Add the environment variables listed in the setup section.
+
+### Database (Supabase)
+
+1. Create a Supabase project.
+2. Run the SQL from `schema.sql` in the SQL editor.
+3. Add the resulting `SUPABASE_URL` and `SUPABASE_ANON_KEY` values to your backend environment.
+
+## Design Notes
+
+The scraping logic is documented in [`DESIGN_NOTES.md`](./DESIGN_NOTES.md). It covers:
+- why Playwright was chosen instead of basic HTML scraping,
+- the retry strategy for slow and failing pages,
+- the anti-scraping challenges in the mock store,
+- trade-offs such as cron-based scheduling and external dependencies,
+- the mistakes made in earlier attempts and how they were corrected.
+
+## Notes
+
+- The frontend is configured to use `import.meta.env.VITE_API_URL` when present.
+- If `VITE_API_URL` is not set, it falls back to relative `/api` requests for local development.
+- The backend and scraper logic are intentionally left separate from the frontend API connection layer.
+
+## License
+
+MIT
