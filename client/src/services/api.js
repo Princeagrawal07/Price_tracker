@@ -1,74 +1,67 @@
 // Frontend API Service layer
 
-const API_BASE = '/api';
+// Use the deployed backend when VITE_API_URL is configured (for example on Vercel).
+// Keeping the fallback relative preserves the existing Vite proxy/local behavior.
+const configuredApiUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = `${configuredApiUrl}/api`;
+
+async function request(path, options) {
+  const res = await fetch(`${API_BASE}${path}`, options);
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || `Request failed with status ${res.status}`);
+  }
+
+  return data;
+}
 
 export async function searchProducts(query) {
-  const res = await fetch(`${API_BASE}/products/search?q=${encodeURIComponent(query)}`);
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
+  const data = await request(`/products/search?q=${encodeURIComponent(query)}`);
   return data.items || [];
 }
 
 export async function getTrackedProducts() {
-  const res = await fetch(`${API_BASE}/products`);
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
+  const data = await request('/products');
   return data.products || [];
 }
 
 export async function getProductDetail(productId) {
-  const res = await fetch(`${API_BASE}/products/${productId}`);
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
-  return data;
+  return request(`/products/${productId}`);
 }
 
 export async function trackProduct(productData) {
-  const res = await fetch(`${API_BASE}/products/track`, {
+  const data = await request('/products/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(productData)
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
   return data.product;
 }
 
 export async function untrackProduct(productId) {
-  const res = await fetch(`${API_BASE}/products/${productId}`, { method: 'DELETE' });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
-  return data;
+  return request(`/products/${productId}`, { method: 'DELETE' });
 }
 
 export async function triggerManualScrape(productId) {
-  const res = await fetch(`${API_BASE}/scrape/product/${productId}`, { method: 'POST' });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
+  const data = await request(`/scrape/product/${productId}`, { method: 'POST' });
   return data.result;
 }
 
 export async function triggerHeadedRun(productId, slowMo = 600) {
-  const res = await fetch(`${API_BASE}/scrape/headed`, {
+  const data = await request('/scrape/headed', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ productId, slowMo })
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
   return data.result;
 }
 
 export async function getAlerts() {
-  const res = await fetch(`${API_BASE}/alerts`);
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
+  const data = await request('/alerts');
   return data.alerts || [];
 }
 
 export async function markAlertRead(alertId) {
-  const res = await fetch(`${API_BASE}/alerts/${alertId}/read`, { method: 'PUT' });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error);
-  return data;
+  return request(`/alerts/${alertId}/read`, { method: 'PUT' });
 }
